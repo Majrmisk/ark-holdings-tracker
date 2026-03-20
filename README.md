@@ -13,7 +13,6 @@ https://www.figma.com/design/4LdSh4w5wm4Hoy7umbKOcJ/Event-Storming--Community-?n
 ![software design](software_design.png)
 
 ## User stories
-(also in pdf)
 
 ### User story
 
@@ -95,13 +94,54 @@ Acceptance criteria:
 
 Out of scope:
 
-- Admin removing the Admin role of another user
+- Admin changing the role of another user
 
-notes:  
-admin \- ina color palette ako user/superuser  
-nie je tu mentioned ze old records sa deletuju  
-admin moze menit heslo, login nemoze menit  
-jeden hardcoded super admin, len on moze spravovat ostatnych adminov
+### User story
+As an Admin, I want to see a distinct color scheme so that my interface is different to a regular User or SuperUser.
+
+Acceptance criteria:
+
+- Admin interface uses a different color scheme
+
+Out of scope:
+- Adding more color schemes
+
+### User story
+As a System Administrator, I want old records to be automatically deleted so that the database remains clean.
+
+Acceptance criteria:
+
+- More than two week old records are deleted automatically
+
+Out of scope:
+
+- Manual deleting of records by users or admins
+
+
+### User story
+As an Admin, I want to change a user's password so that I can manage their access credentials.
+
+Acceptance criteria:
+
+- Admin can update the password for an existing user
+
+Out of scope:
+
+- Admin changing the user's login name
+- Admin changing the password of other admins
+
+
+### User story
+As a Super Admin, I want to be the only one who can manage other Admins so that I have total control over who manages the system.
+
+Acceptance criteria:
+- Super admin can do anything a regular admin can
+- Super Admin can alse create, modify, and delete other Admins
+- Regular Admins cannot manage other Admins
+
+Out of scope:
+
+- Multiple Super Admin accounts
 
 
 ## Authors:
