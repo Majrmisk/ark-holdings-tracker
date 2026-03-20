@@ -6,6 +6,8 @@ https://www.figma.com/design/4LdSh4w5wm4Hoy7umbKOcJ/Event-Storming--Community-?n
 ### Big picture
 ![big picture](big_picture.png)
 
+### Process Modeling
+![process modeling](process_modeling.png)
 
 ### Software design
 ![software design](software_design.png)
