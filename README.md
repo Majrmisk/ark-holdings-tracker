@@ -18,6 +18,8 @@ https://www.figma.com/design/4LdSh4w5wm4Hoy7umbKOcJ/Event-Storming--Community-?n
 
 As a User, I want To Login so that I can View the stocks diff Table..
 
+**Estimation:** 5 Story Points
+
 Acceptance criteria:
 
 - table shown after login
@@ -31,6 +33,8 @@ Out of scope:
 
 As a SuperUser, I want to Toggle the color scheme so that the Table is prettier :).
 
+**Estimation:** 2 Story Points
+
 Acceptance criteria:
 
 - table color changed
@@ -42,6 +46,8 @@ Out of scope:
 ### User story
 
 As a User, I want to export the table as PDF so that I have it downloaded.
+
+**Estimation:** 5 Story Points
 
 Acceptance criteria:
 
@@ -57,6 +63,8 @@ Out of scope:
 
 As a User, I want to view up to date data so that I can make the right decisions.
 
+**Estimation:** 3 Story Points
+
 Acceptance criteria:
 
 - the data is updated every hour
@@ -64,6 +72,8 @@ Acceptance criteria:
 ### User story
 
 As Admin, I want to create new Users so that they can login and use the App.
+
+**Estimation:** 5 Story Points
 
 Acceptance criteria:
 
@@ -74,6 +84,8 @@ Acceptance criteria:
 ### User story
 
 As an Admin, I want to Delete a User so that they cannot login and view the table.
+
+**Estimation:** 2 Story Points
 
 Acceptance criteria:
 
@@ -87,6 +99,8 @@ Out of scope:
 ### User story
 
 As an Admin, I want to Update the role of a user so that They can have more permissions.
+
+**Estimation:** 2 Story Points
 
 Acceptance criteria:
 
