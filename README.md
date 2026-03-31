@@ -113,6 +113,8 @@ Out of scope:
 ### User story
 As an Admin, I want to see a distinct color scheme so that my interface is different to a regular User or SuperUser.
 
+**Estimation:** 2 Story Points
+
 Acceptance criteria:
 
 - Admin interface uses a different color scheme
@@ -122,6 +124,8 @@ Out of scope:
 
 ### User story
 As a System Administrator, I want old records to be automatically deleted so that the database remains clean.
+
+**Estimation:** 3 Story Points
 
 Acceptance criteria:
 
@@ -135,6 +139,8 @@ Out of scope:
 ### User story
 As an Admin, I want to change a user's password so that I can manage their access credentials.
 
+**Estimation:** 3 Story Points
+
 Acceptance criteria:
 
 - Admin can update the password for an existing user
@@ -147,6 +153,8 @@ Out of scope:
 
 ### User story
 As a Super Admin, I want to be the only one who can manage other Admins so that I have total control over who manages the system.
+
+**Estimation:** 5 Story Points
 
 Acceptance criteria:
 - Super admin can do anything a regular admin can
