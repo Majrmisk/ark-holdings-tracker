@@ -1,0 +1,16 @@
+image: mcr.microsoft.com/dotnet/sdk:10.0
+
+stages:
+  - build
+
+variables:
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1" 
+  DOTNET_NOLOGO: "true"
+
+build:
+  tags:
+    - shared-fi
+  stage: build
+  script:
+    - dotnet restore PV260Project.sln
+    - dotnet build PV260Project.sln --configuration Release --no-restore
