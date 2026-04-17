@@ -1,4 +1,8 @@
+using Application.Interfaces;
+using Domain;
 using Infrastructure.Persistence;
+using Infrastructure.Repositories;
+using Marten;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +23,15 @@ public static class DependencyInjection
             );
 
         services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
+
+        services.AddMarten(options =>
+        {
+            options.Connection(connectionString);
+            options.Schema.For<HoldingSnapshot>();
+            options.Schema.For<HoldingDiff>();
+        }).UseLightweightSessions();
+
+        services.AddScoped<IHoldingsRepository, HoldingsRepository>();
 
         return services;
     }
