@@ -40,9 +40,11 @@ public class HoldingsRepository(IDocumentSession session) : IHoldingsRepository
             .ToListAsync();
     }
 
-    public async Task DeleteOldDiffsAsync(DateTime cutoff)
+    public async Task DeleteOldDataAsync(DateTime cutoff)
     {
         session.DeleteWhere<HoldingDiff>(d => d.ComputedAt < cutoff);
+        await session.SaveChangesAsync();
+
         session.DeleteWhere<HoldingSnapshot>(s => s.FetchedAt < cutoff);
         await session.SaveChangesAsync();
     }

@@ -12,6 +12,6 @@ public interface IHoldingsRepository
 
     // For export, I understand that the user will select a range of dates to export?
     Task<IReadOnlyList<HoldingDiff>> GetDiffsInRangeAsync(DateTime from, DateTime to);
-    
-    Task DeleteOldDiffsAsync(DateTime cutoff);
+
+    Task DeleteOldDataAsync(DateTime cutoff);
 }
