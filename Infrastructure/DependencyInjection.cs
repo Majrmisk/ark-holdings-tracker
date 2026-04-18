@@ -1,5 +1,9 @@
+using Application.Clients;
+using Application.Features.Holding;
 using Application.Interfaces;
+using Application.Services;
 using Domain;
+using Infrastructure.CronJobs;
 using Infrastructure.Persistence;
 using Infrastructure.Repositories;
 using Marten;
@@ -33,6 +37,20 @@ public static class DependencyInjection
 
         services.AddScoped<IHoldingsRepository, HoldingsRepository>();
 
+        return services;
+    }
+
+    public static IServiceCollection AddApplication(this IServiceCollection services)
+    {
+        services.AddScoped<IHoldingService, HoldingService>();
+        services.AddHttpClient<IHoldingClient, HoldingClient>();
+        return services;
+    }
+
+    public static IServiceCollection AddCronJobs(this IServiceCollection services)
+    {
+        services.AddHostedService<FetchJob>();
+        services.AddHostedService<DeleteJob>();
         return services;
     }
 }
