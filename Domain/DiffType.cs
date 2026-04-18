@@ -5,5 +5,7 @@ public enum DiffType
     New,
     Increased,
     Reduced,
-    Removed
+    Removed,
+    Unchanged,
+    WeightShifted
 }
