@@ -6,3 +6,4 @@ obj/
 *.suo
 .codex
 ignore/
+node_modules

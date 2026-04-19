@@ -1,0 +1,17 @@
+{
+  "name": "pv260_notino_team3",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "css:build": "npx @tailwindcss/cli -i Presentation/wwwroot/css/site.css -o Presentation/wwwroot/css/styles.css --minify"  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.30.1",
+  "dependencies": {
+    "@tailwindcss/cli": "^4.2.2",
+    "tailwindcss": "^4.2.2"
+  }
+}
