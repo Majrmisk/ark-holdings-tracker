@@ -17,7 +17,14 @@ builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
         options.Password.RequireDigit = true;
         options.Password.RequiredLength = 6;
     })
-    .AddEntityFrameworkStores<AppDbContext>();
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddDefaultTokenProviders();
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/login";
+});
+
 
 var app = builder.Build();
 
@@ -46,5 +53,7 @@ app.MapStaticAssets();
 
 app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
+
+app.UseRequestLocalization();
 
 app.Run();
