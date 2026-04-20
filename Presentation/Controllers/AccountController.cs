@@ -7,6 +7,7 @@ namespace App.Controllers;
 
 public class AccountController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager) : Controller
 {
+    [HttpGet]
     public IActionResult Login()
     {
         return View();
@@ -17,16 +18,24 @@ public class AccountController(UserManager<AppUser> userManager, SignInManager<A
     {
         if (ModelState.IsValid)
         {
-            var result = await signInManager.PasswordSignInAsync(model.Username, model.Password, true, false);
-            
+            var result = await signInManager.PasswordSignInAsync(model.Username, model.Password, model.RememberMe, false);
+
             if (result.Succeeded)
             {
                 return RedirectToAction(nameof(HomeController.Index), "Home");
             }
-            
+
             ModelState.AddModelError(string.Empty, "Invalid login attempt.");
         }
-        
+
         return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Logout()
+    {
+        await signInManager.SignOutAsync();
+        return RedirectToAction(nameof(HomeController.Index), "Home");
     }
 }
