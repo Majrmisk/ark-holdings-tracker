@@ -6,9 +6,9 @@
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4 mt-2">
-    <h1 class="h3 mb-0 text-gray-800">Diff Computed: @Model.Diff.ComputedAt.ToString("g",
+    <h1 class="h3 mb-0 text-gray-800">Diff Computed at @Model.Diff.ComputedAt.ToString("g",
                                 System.Globalization.CultureInfo.CurrentCulture)</h1>
-        <a asp-action="ExportPdf" class="btn btn-outline-primary shadow-sm">
+        <a asp-action="ExportPdf" target="_blank" class="btn btn-outline-primary shadow-sm">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                  class="bi bi-file-earmark-pdf me-1" viewBox="0 0 16 16">
                 <path
