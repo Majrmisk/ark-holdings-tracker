@@ -1,0 +1,29 @@
+@model ErrorViewModel
+@{
+    var statusCode = ViewData["StatusCode"] as int? ?? 404;
+    var title = statusCode switch
+    {
+        403 => "Access Denied",
+        404 => "Page Not Found",
+        _ => "Error"
+    };
+    ViewData["Title"] = title;
+}
+
+<div class="d-flex flex-column align-items-center mt-5 gap-3">
+    <h3>@statusCode</h3>
+    <figure class="figure d-flex flex-column align-items-center">
+        <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNnIweGxtYWNwaThhb3l2N2VpMHFhMHlyemZ0dmlqd2o1eWF6MXN4eiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l2JJKs3I69qfaQleE/giphy.gif"
+             alt="Obi-Wan Kenobi" />
+        <figcaption class="figure-caption text-center mt-2">
+            <strong>This is not the page you are looking for.</strong>
+        </figcaption>
+    </figure>
+    
+    @if (Model != null && Model.ShowRequestId)
+    {
+        <p class="text-muted small">
+            <strong>Request ID:</strong> <code>@Model.RequestId</code>
+        </p>
+    }
+</div>

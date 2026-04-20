@@ -54,6 +54,12 @@ app.MapStaticAssets();
 app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
+app.MapFallback(context =>
+{
+    context.Response.Redirect("/Home/Error");
+    return Task.CompletedTask;
+});
+
 app.UseRequestLocalization();
 
 app.Run();
