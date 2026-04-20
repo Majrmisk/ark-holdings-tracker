@@ -1,31 +1,48 @@
 @model LoginViewModel
+@{
+    ViewData["Title"] = "Log in";
+}
 
-<form asp-action="Login" method="post">
-    <div class="mb-3">
-        <label asp-for="Username" class="form-label">Username</label>
-        <input asp-for="Username" class="form-control" />
-        <span asp-validation-for="Username" class="text-danger small"></span>
-    </div>
+<div class="row mt-5">
+    <div class="col-md-4 offset-md-4">
+        <h2>@ViewData["Title"]</h2>
+        <hr />
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <form asp-action="Login" method="post">
+                    <div class="mb-3">
+                        <label asp-for="Username" class="form-label fw-bold">Username</label>
+                        <input asp-for="Username" class="form-control" placeholder="Enter username" />
+                        <span asp-validation-for="Username" class="text-danger small"></span>
+                    </div>
 
-    <div class="mb-3">
-        <label asp-for="Password" class="form-label">Password</label>
-        <input asp-for="Password" type="password" class="form-control" />
-        <span asp-validation-for="Password" class="text-danger small"></span>
-    </div>
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label fw-bold">Password</label>
+                        <input asp-for="Password" type="password" class="form-control" placeholder="Enter password" />
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                    </div>
 
-    <div class="mb-3 form-check">
-        <input asp-for="RememberMe" class="form-check-input" />
-        <label asp-for="RememberMe" class="form-check-label">Remember me</label>
-    </div>
+                    <div class="mb-3 form-check">
+                        <input asp-for="RememberMe" class="form-check-input" />
+                        <label asp-for="RememberMe" class="form-check-label user-select-none">Remember me</label>
+                    </div>
 
-    <div class="d-grid">
-        <button type="submit" class="btn btn-primary">Login</button>
-    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Login</button>
+                    </div>
 
-    @if (!ViewData.ModelState.IsValid)
-    {
-        <div class="alert alert-danger mt-3 small">
-            @Html.ValidationSummary(false, "", new { @class = "mb-0" })
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger mt-3 small">
+                            @Html.ValidationSummary(false, "", new { @class = "mb-0" })
+                        </div>
+                    }
+                </form>
+            </div>
         </div>
-    }
-</form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
