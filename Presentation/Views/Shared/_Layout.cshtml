@@ -6,32 +6,58 @@
     <title>@ViewData["Title"] - Presentation</title>
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css"/>
-    <link rel="stylesheet" href="~/css/styles.css" asp-append-version="true"/>
-    <link rel="stylesheet" href="~/Presentation.styles.css" asp-append-version="true"/>
+    <link rel="stylesheet" href="~/css/styles.css" asp-append-version="true" />
 </head>
 <body>
 <header>
-    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-4">
         <div class="container-fluid">
-            <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Presentation</a>
-            <a class="nav-link text-dark" asp-area="" asp-controller="Table" asp-action="Index">Diffs</a>
-            <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Login">Login</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                    aria-expanded="false" aria-label="Toggle navigation">
+                <a class="navbar-brand fw-bold" asp-area="" asp-controller="Home" asp-action="Index">PV260_notino_team3
+                    Holdings</a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                            data-bs-target=".navbar-collapse">
                 <span class="navbar-toggler-icon"></span>
-            </button>
-            
+                    </button>
             <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                <ul class="navbar-nav grow">
+                        <ul class="navbar-nav flex-grow-1">
                     <li class="nav-item">
                         <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                     </li>
                     <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Table"
+                                   asp-action="Index">Diffs</a>
+                            </li>
+                            <li class="nav-item">
                         <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Table" asp-action="Index">Diffs</a>
-                    </li>
+                        </ul>
+                        <ul class="navbar-nav">
+                            <hr class="d-sm-none" />
+                            @if (User.Identity?.IsAuthenticated == true)
+                            {
+                                @if (User.IsInRole("Admin") || User.IsInRole("SuperAdmin"))
+                                {
+                                    <li class="nav-item">
+                                        <a class="nav-link text-dark" asp-area="Admin" asp-controller="Home"
+                                           asp-action="Index">Administration</a>
+                                    </li>
+                                }
+                                <li class="nav-item d-flex align-items-center me-3 text-muted">
+                                    Welcome, @User.Identity.Name!
+                                </li>
+                                <li class="nav-item">
+                                    <form asp-controller="Account" asp-action="Logout" method="post" class="form-inline m-0">
+                                        <button type="submit" class="nav-link btn btn-link text-dark border-0">Logout</button>
+                                    </form>
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Account"
+                                       asp-action="Login">Login</a>
+                                </li>
+                            }
                 </ul>
             </div>
         </div>
