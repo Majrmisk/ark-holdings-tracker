@@ -1,0 +1,40 @@
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="container mt-4">
+    <h1 class="mb-4">Admin Dashboard</h1>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title fw-bold">
+                        User Management
+                    </h5>
+                    <p class="card-text text-muted mb-4">View and manage system users and roles.</p>
+                    <div class="mt-auto">
+                        <a asp-area="Admin" asp-controller="Users" asp-action="Index"
+                           class="btn btn-primary w-100 fw-semibold">Manage Users</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
