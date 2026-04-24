@@ -40,18 +40,3 @@ body {
   text-align: start;
 }
 
-@media print {
-  header,
-  footer,
-  nav {
-    display: none !important;
-  }
-  .btn {
-    display: none !important;
-  }
-  #MainContainer {
-    margin: 0 !important;
-    width: 100% !important;
-    max-width: 100% !important;
-  }
-}
