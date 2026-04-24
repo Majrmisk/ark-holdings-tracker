@@ -5,8 +5,6 @@ using Domain;
 using Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using PuppeteerSharp;
-using PuppeteerSharp.Media;
 
 namespace App.Controllers;
 

@@ -18,7 +18,6 @@
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
-      <PackageReference Include="PuppeteerSharp" Version="24.40.0" />
     </ItemGroup>
 
 </Project>
