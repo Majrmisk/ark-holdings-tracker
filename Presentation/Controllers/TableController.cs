@@ -3,12 +3,10 @@ using Application.Interfaces;
 using Application.Services;
 using Domain;
 using Infrastructure.Identity;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using PuppeteerSharp;
 using PuppeteerSharp.Media;
-using Spectre.Console;
 
 namespace App.Controllers;
 
@@ -20,14 +18,17 @@ public class TableController(UserManager<AppUser> userManager, IHoldingService h
 
         if (diff == null)
         {
-            return NotFound();
+            await holdingService.FetchLatest();
+            diff = await holdingService.GetLatestDiffAsync();
+            if (diff == null)
+                return NotFound();
         }
 
         var currentUser = await userManager.GetUserAsync(User);
 
         if (currentUser == null)
         {
-            return NotFound();
+            return Unauthorized();
         }
 
         var roles = await userManager.GetRolesAsync(currentUser);
