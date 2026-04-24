@@ -1,5 +1,21 @@
 # PV260_notino_team3
 
+## Prerequisites
+- .NET 10
+- Docker
+
+## Running
+1. start db container
+```sh
+docker compose up
+```
+2. run solution
+```sh
+cd Presentation/
+dotnet run
+```
+
+
 ## Figma
 https://www.figma.com/design/4LdSh4w5wm4Hoy7umbKOcJ/Event-Storming--Community-?node-id=48-12914&p=f&t=HERhYRbRrVvt1Prk-0
 
