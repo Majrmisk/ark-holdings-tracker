@@ -36,6 +36,7 @@ public static class DependencyInjection
         }).UseLightweightSessions();
 
         services.AddScoped<IHoldingsRepository, HoldingsRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
 
         return services;
     }
@@ -43,6 +44,7 @@ public static class DependencyInjection
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
         services.AddScoped<IHoldingService, HoldingService>();
+        services.AddScoped<IUserService, UserService>();
         services.AddHttpClient<IHoldingClient, HoldingClient>();
         return services;
     }

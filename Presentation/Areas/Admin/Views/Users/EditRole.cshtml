@@ -1,0 +1,46 @@
+@model App.Models.Admin.EditRoleViewModel
+@{
+    ViewData["Title"] = "Edit Role";
+}
+
+<div class="row mt-4">
+    <div class="col-md-5 offset-md-3">
+        <h2 class="mb-4">Edit Role</h2>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <p class="text-muted mb-3">Updating role for <strong>@Model.UserName</strong></p>
+
+                <form asp-area="Admin" asp-controller="Users" asp-action="EditRole" method="post">
+                    <input asp-for="UserId" type="hidden" />
+                    <input asp-for="UserName" type="hidden" />
+
+                    <div class="mb-4">
+                        <label asp-for="SelectedRole" class="form-label fw-bold">New Role</label>
+                        <select asp-for="SelectedRole"
+                                asp-items="@(new SelectList(Model.AvailableRoles))"
+                                class="form-select">
+                        </select>
+                        <span asp-validation-for="SelectedRole" class="text-danger small"></span>
+                    </div>
+
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger small">
+                            @Html.ValidationSummary(false, "", new { @class = "mb-0" })
+                        </div>
+                    }
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary fw-semibold">Save</button>
+                        <a asp-area="Admin" asp-controller="Users" asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
