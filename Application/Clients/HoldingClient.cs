@@ -1,8 +1,10 @@
 ﻿using Application.Interfaces;
 using Application.Settings;
 using Domain;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Globalization;
+using System.Net;
 using System.Text;
 
 namespace Application.Clients
@@ -11,18 +13,21 @@ namespace Application.Clients
     {
         private readonly Uri _baseUrl;
         private readonly HttpClient _http;
+        private readonly ILogger<HoldingClient> _logger;
+        private readonly int _fetchRetryCount = 3;
+        private readonly int _exponentialBackoffBase = 2;
 
-        public HoldingClient(HttpClient httpClient, IOptions<ArkFundClientSettings> options)
+        public HoldingClient(HttpClient httpClient, IOptions<ArkFundClientSettings> options, ILogger<HoldingClient> logger)
         {
             _baseUrl = new Uri(options.Value.CsvUrl);
             _http = httpClient;
+            _logger = logger;
         }
 
         public async Task<HoldingSnapshot?> Fetch()
         {
-            var response = await _http.GetAsync(_baseUrl);
-
-            if (!response.IsSuccessStatusCode)
+            HttpResponseMessage? response = await GetRequest();
+            if (response == null || !response.IsSuccessStatusCode)
                 return null;
 
             var content = await response.Content.ReadAsStringAsync();
@@ -62,6 +67,52 @@ namespace Application.Clients
                 FetchedAt = fetchedAt,
                 Holdings = holdings
             };
+        }
+
+        private async Task<HttpResponseMessage?> GetRequest()
+        {
+            HttpResponseMessage? response = null;
+            for (int i = 0; i < _fetchRetryCount; i++)
+            {
+                try
+                {
+                    response = await _http.GetAsync(_baseUrl);
+                }
+                catch (UriFormatException)
+                {
+                    _logger.LogError("HoldingClient: Invalid URL");
+                }
+                catch (InvalidOperationException)
+                {
+                    _logger.LogError("HoldingClient: Invalid URL");
+                }
+                catch (HttpRequestException ex)
+                {
+                    _logger.LogError($"HoldingClient: Error while initiating connection: {ex.HttpRequestError}");
+                }
+                catch (OperationCanceledException)
+                {
+                    _logger.LogError($"HoldingClient: Timeout | {i + 1}/{_fetchRetryCount} tries");
+                }
+                finally
+                {
+                    Thread.Sleep((int)Math.Pow(_exponentialBackoffBase, i) * 1000);
+                }
+
+                if (response == null)
+                    continue;
+
+                if (response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    _logger.LogError("HoldingClient: Received 404 status code");
+                    break; // Don't retry, nothing would change
+                }
+
+                if ((int)response.StatusCode >= 500)
+                    _logger.LogError($"HoldingClient: Received status code: {response.StatusCode}");
+            }
+
+            return response;
         }
 
         private static string Sanitize(string field) =>
