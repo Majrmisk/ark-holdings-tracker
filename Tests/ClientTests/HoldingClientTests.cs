@@ -6,7 +6,7 @@ using WireMock.RequestBuilders;
 using WireMock.ResponseBuilders;
 using WireMock.Server;
 
-namespace Tests
+namespace Tests.ClientTests
 {
     public class SpyLogger<T> : ILogger<T>
     {
@@ -116,7 +116,7 @@ namespace Tests
             _server.Given(Request.Create().WithPath(CsvPath).UsingGet())
                 .RespondWith(Response.Create().WithStatusCode(200).WithBody(csv));
 
-            var (client, _) = CreateClient();
+            var (client, logger) = CreateClient();
             var result = await client.Fetch();
 
             Assert.NotNull(result);
@@ -131,10 +131,27 @@ namespace Tests
                 .RespondWith(Response.Create().WithStatusCode(200)
                     .WithBody("date,fund,company,ticker,cusip,shares,market value($),weight(%)"));
 
-            var (client, _) = CreateClient();
+            var (client, logger) = CreateClient();
             var result = await client.Fetch();
 
             Assert.Null(result);
+            Assert.True(!logger.HasWarningOrAbove,
+                "Log was not expected after receiving header only csv.");
+        }
+
+        [Fact]
+        public async Task Fetch_ReturnsNull_LogsWarning_WhenCsvIsInvalid()
+        {
+            _server.Given(Request.Create().WithPath(CsvPath).UsingGet())
+                .RespondWith(Response.Create().WithStatusCode(200)
+                    .WithBody("CoMpLeTeLy-InVaLiD_CsV{]!@?>\"\']"));
+
+            var (client, logger) = CreateClient();
+            var result = await client.Fetch();
+
+            Assert.Null(result);
+            Assert.True(logger.HasWarningOrAbove,
+                "Expected a warning-level log entry when an invalid CSV is received.");
         }
 
         [Fact]

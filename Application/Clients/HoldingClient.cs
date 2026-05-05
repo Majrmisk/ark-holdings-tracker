@@ -1,11 +1,12 @@
 ﻿using Application.Interfaces;
 using Application.Settings;
+using CsvHelper;
+using CsvHelper.Configuration;
 using Domain;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Globalization;
 using System.Net;
-using System.Text;
 
 namespace Application.Clients
 {
@@ -31,37 +32,48 @@ namespace Application.Clients
                 return null;
 
             var content = await response.Content.ReadAsStringAsync();
-            var lines = content.Split('\n', StringSplitOptions.RemoveEmptyEntries);
 
-            if (lines.Length < 2)
+            var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+            {
+                HasHeaderRecord = true,
+                MissingFieldFound = null,
+                BadDataFound = null,
+            };
+
+            using var reader = new StringReader(content);
+            using var csv = new CsvReader(reader, config);
+
+            if (!csv.Read() || !csv.ReadHeader() ||
+                csv.HeaderRecord == null || csv.HeaderRecord.Length < 8)
+            {
+                _logger.LogWarning("HoldingClient: Invalid CSV received");
                 return null;
+            }
 
             var holdings = new List<HoldingRecord>();
             var fetchedAt = DateTime.UtcNow;
 
-            foreach (var line in lines.Skip(1))
+            while (csv.Read())
             {
-                var fields = ParseCsvLine(line);
-
-                if (fields.Length < 8)
+                if (csv.Parser.Count < 8)
                     continue;
 
-                long.TryParse(Sanitize(fields[5]), out var shares);
-                decimal.TryParse(Sanitize(fields[6]), NumberStyles.Any, CultureInfo.InvariantCulture, out var marketValue);
-                decimal.TryParse(Sanitize(fields[7]), NumberStyles.Any, CultureInfo.InvariantCulture, out var weight);
+                long.TryParse(Sanitize(csv.GetField(5) ?? ""), out var shares);
+                decimal.TryParse(Sanitize(csv.GetField(6) ?? ""), NumberStyles.Any, CultureInfo.InvariantCulture, out var marketValue);
+                decimal.TryParse(Sanitize(csv.GetField(7) ?? ""), NumberStyles.Any, CultureInfo.InvariantCulture, out var weight);
 
                 holdings.Add(new HoldingRecord
                 {
-                    Company = fields[2].Trim(),
-                    Ticker = fields[3].Trim(),
-                    Cusip = fields[4].Trim(),
+                    Company = (csv.GetField(2) ?? "").Trim(),
+                    Ticker = (csv.GetField(3) ?? "").Trim(),
+                    Cusip = (csv.GetField(4) ?? "").Trim(),
                     Shares = shares,
                     MarketValueUsd = marketValue,
                     WeightPercent = weight
                 });
             }
 
-            return new HoldingSnapshot
+            return holdings.Count == 0 ? null : new HoldingSnapshot
             {
                 Id = Guid.NewGuid(),
                 FetchedAt = fetchedAt,
@@ -117,30 +129,5 @@ namespace Application.Clients
 
         private static string Sanitize(string field) =>
             field.Replace("$", "").Replace("%", "").Replace(",", "").Trim();
-
-        private static string[] ParseCsvLine(string line)
-        {
-            var fields = new List<string>();
-            var current = new StringBuilder();
-            bool inQuotes = false;
-
-            // Parsing by char, bcs report has 
-            // numbers with "," - "7,922,076"
-            foreach (char c in line)
-            {
-                if (c == '"')
-                    inQuotes = !inQuotes;
-                else if (c == ',' && !inQuotes)
-                {
-                    fields.Add(current.ToString());
-                    current.Clear();
-                }
-                else
-                    current.Append(c);
-            }
-
-            fields.Add(current.ToString());
-            return fields.ToArray();
-        }
     }
 }
