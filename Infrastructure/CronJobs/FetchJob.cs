@@ -37,7 +37,15 @@ namespace Infrastructure.CronJobs
                 using var scope = _scopeFactory.CreateScope();
                 var holdingService = scope.ServiceProvider.GetRequiredService<IHoldingService>();
                 _logger.LogInformation("Running fetch job at {Time}", DateTime.UtcNow);
-                await holdingService.FetchLatest();
+
+                try
+                {
+                    await holdingService.FetchLatest();
+                }
+                catch (Exception)
+                {
+                    _logger.LogError("Fetch job failed");
+                }
             }
         }
     }

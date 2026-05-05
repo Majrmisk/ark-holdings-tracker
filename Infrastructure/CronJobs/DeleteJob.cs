@@ -37,7 +37,15 @@ namespace Infrastructure.CronJobs
                 using var scope = _scopeFactory.CreateScope();
                 var holdingService = scope.ServiceProvider.GetRequiredService<IHoldingService>();
                 _logger.LogInformation("Running delete job at {Time}", DateTime.UtcNow);
-                await holdingService.DeleteOldDataAsync();
+
+                try
+                {
+                    await holdingService.DeleteOldDataAsync();
+                }
+                catch (Exception)
+                {
+                    _logger.LogError("Delete job failed");
+                }
             }
         }
     }
