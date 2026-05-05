@@ -1,5 +1,7 @@
 using Application.Interfaces;
+using Application.Settings;
 using Domain;
+using Microsoft.Extensions.Options;
 
 namespace Application.Services
 {
@@ -7,12 +9,13 @@ namespace Application.Services
     {
         private readonly IHoldingsRepository _holdingsRepository;
         private readonly IHoldingClient _holdingClient;
-        private readonly static int DELETE_AFTER_DAYS = 14;
+        private readonly int _deleteAfterDays;
 
-        public HoldingService(IHoldingsRepository holdingsRepository, IHoldingClient holdingClient)
+        public HoldingService(IHoldingsRepository holdingsRepository, IHoldingClient holdingClient, IOptions<DataRetentionSettings> options)
         {
             _holdingsRepository = holdingsRepository;
             _holdingClient = holdingClient;
+            _deleteAfterDays = options.Value.DeleteAfterDays;
         }
 
         public async Task<HoldingSnapshot?> GetLatestSnapshotAsync()
@@ -32,7 +35,7 @@ namespace Application.Services
 
         public async Task DeleteOldDataAsync()
         {
-            var cutoff = DateTime.UtcNow.AddDays(-DELETE_AFTER_DAYS);
+            var cutoff = DateTime.UtcNow.AddDays(-_deleteAfterDays);
             await _holdingsRepository.DeleteOldDataAsync(cutoff);
         }
 

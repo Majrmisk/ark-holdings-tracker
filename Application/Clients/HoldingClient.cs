@@ -1,5 +1,7 @@
 ﻿using Application.Interfaces;
+using Application.Settings;
 using Domain;
+using Microsoft.Extensions.Options;
 using System.Globalization;
 using System.Text;
 
@@ -7,17 +9,18 @@ namespace Application.Clients
 {
     public class HoldingClient : IHoldingClient
     {
-        private readonly static Uri BASE_URL = new Uri("https://assets.ark-funds.com/fund-documents/funds-etf-csv/ARK_INNOVATION_ETF_ARKK_HOLDINGS.csv");
+        private readonly Uri _baseUrl;
         private readonly HttpClient _http;
 
-        public HoldingClient(HttpClient httpClient)
+        public HoldingClient(HttpClient httpClient, IOptions<ArkFundClientSettings> options)
         {
+            _baseUrl = new Uri(options.Value.CsvUrl);
             _http = httpClient;
         }
 
         public async Task<HoldingSnapshot?> Fetch()
         {
-            var response = await _http.GetAsync(BASE_URL);
+            var response = await _http.GetAsync(_baseUrl);
 
             if (!response.IsSuccessStatusCode)
                 return null;

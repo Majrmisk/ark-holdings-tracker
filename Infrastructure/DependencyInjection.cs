@@ -1,6 +1,7 @@
 using Application.Clients;
 using Application.Interfaces;
 using Application.Services;
+using Application.Settings;
 using Domain;
 using Infrastructure.CronJobs;
 using Infrastructure.Persistence;
@@ -50,6 +51,13 @@ public static class DependencyInjection
     {
         services.AddHostedService<FetchJob>();
         services.AddHostedService<DeleteJob>();
+        return services;
+    }
+
+    public static IServiceCollection AddSettings(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<ArkFundClientSettings>(configuration.GetSection("ArkFundClient"));
+        services.Configure<DataRetentionSettings>(configuration.GetSection("DataRetention"));
         return services;
     }
 }
