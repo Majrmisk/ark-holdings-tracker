@@ -1,7 +1,9 @@
+using Application.Settings;
 using Domain;
 using Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Infrastructure.Persistence;
 
@@ -11,6 +13,7 @@ public static class DataSeeder
     {
         var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
         var userManager = serviceProvider.GetRequiredService<UserManager<AppUser>>();
+        var adminSettings = serviceProvider.GetRequiredService<IOptions<AdminUserSettings>>().Value;
 
         foreach (var role in Enum.GetValues<UserRole>())
         {
@@ -21,8 +24,13 @@ public static class DataSeeder
             }
         }
 
-        const string adminUsername = "admin";
-        const string adminPassword = "Admin123!";
+        var adminUsername = adminSettings.Username;
+        var adminPassword = adminSettings.Password;
+
+        if (string.IsNullOrWhiteSpace(adminUsername) || string.IsNullOrWhiteSpace(adminPassword))
+        {
+            throw new InvalidOperationException("Admin user seed settings must include Username and Password.");
+        }
 
         if (await userManager.FindByNameAsync(adminUsername) is null)
         {

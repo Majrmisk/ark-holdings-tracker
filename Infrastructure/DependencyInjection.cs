@@ -60,6 +60,7 @@ public static class DependencyInjection
     {
         services.Configure<ArkFundClientSettings>(configuration.GetSection("ArkFundClient"));
         services.Configure<DataRetentionSettings>(configuration.GetSection("DataRetention"));
+        services.Configure<AdminUserSettings>(configuration.GetSection("AdminUser"));
         return services;
     }
 }

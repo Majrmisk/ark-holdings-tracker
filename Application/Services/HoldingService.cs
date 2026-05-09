@@ -1,6 +1,7 @@
 using Application.Interfaces;
 using Application.Settings;
 using Domain;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Application.Services
@@ -9,12 +10,18 @@ namespace Application.Services
     {
         private readonly IHoldingsRepository _holdingsRepository;
         private readonly IHoldingClient _holdingClient;
+        private readonly ILogger<HoldingService> _logger;
         private readonly int _deleteAfterDays;
 
-        public HoldingService(IHoldingsRepository holdingsRepository, IHoldingClient holdingClient, IOptions<DataRetentionSettings> options)
+        public HoldingService(
+            IHoldingsRepository holdingsRepository,
+            IHoldingClient holdingClient,
+            IOptions<DataRetentionSettings> options,
+            ILogger<HoldingService> logger)
         {
             _holdingsRepository = holdingsRepository;
             _holdingClient = holdingClient;
+            _logger = logger;
             _deleteAfterDays = options.Value.DeleteAfterDays;
         }
 
@@ -43,7 +50,10 @@ namespace Application.Services
         {
             var snapshot = await _holdingClient.Fetch();
             if (snapshot == null)
+            {
+                _logger.LogWarning("Holding fetch returned no snapshot. Data was not updated.");
                 return;
+            }
 
             var latest = await _holdingsRepository.GetLatestSnapshotAsync();
             if (latest != null)
@@ -68,69 +78,54 @@ namespace Application.Services
                 {
                     if (curr.Shares == prev.Shares)
                     {
-                        entries.Add(new DiffEntry
-                        {
-                            Company = curr.Company,
-                            Ticker = curr.Ticker,
-                            Cusip = cusip,
-                            Shares = curr.Shares,
-                            WeightPercent = curr.WeightPercent,
-                            Type = curr.WeightPercent != prev.WeightPercent ? DiffType.WeightShifted : DiffType.Unchanged,
-                            ChangePercent = 0m
-                        });
+                        entries.Add(new DiffEntry(
+                            curr.Company,
+                            curr.Ticker,
+                            cusip,
+                            curr.Shares,
+                            curr.WeightPercent,
+                            curr.WeightPercent != prev.WeightPercent ? DiffType.WeightShifted : DiffType.Unchanged,
+                            0m));
                         continue;
                     }
 
                     var changePercent = (decimal)(curr.Shares - prev.Shares) / prev.Shares * 100;
 
-                    entries.Add(new DiffEntry
-                    {
-                        Company = curr.Company,
-                        Ticker = curr.Ticker,
-                        Cusip = cusip,
-                        Shares = curr.Shares,
-                        WeightPercent = curr.WeightPercent,
-                        Type = curr.Shares > prev.Shares ? DiffType.Increased : DiffType.Reduced,
-                        ChangePercent = changePercent
-                    });
+                    entries.Add(new DiffEntry(
+                        curr.Company,
+                        curr.Ticker,
+                        cusip,
+                        curr.Shares,
+                        curr.WeightPercent,
+                        curr.Shares > prev.Shares ? DiffType.Increased : DiffType.Reduced,
+                        changePercent));
                 }
                 else
                 {
-                    entries.Add(new DiffEntry
-                    {
-                        Company = prev.Company,
-                        Ticker = prev.Ticker,
-                        Cusip = cusip,
-                        Shares = 0,
-                        WeightPercent = 0,
-                        Type = DiffType.Removed,
-                        ChangePercent = -100m
-                    });
+                    entries.Add(new DiffEntry(
+                        prev.Company,
+                        prev.Ticker,
+                        cusip,
+                        0,
+                        0,
+                        DiffType.Removed,
+                        -100m));
                 }
             }
 
             foreach (var (cusip, curr) in currentMap.Where(c => !previousMap.ContainsKey(c.Key)))
             {
-                entries.Add(new DiffEntry
-                {
-                    Company = curr.Company,
-                    Ticker = curr.Ticker,
-                    Cusip = cusip,
-                    Shares = curr.Shares,
-                    WeightPercent = curr.WeightPercent,
-                    Type = DiffType.New,
-                    ChangePercent = null
-                });
+                entries.Add(new DiffEntry(
+                    curr.Company,
+                    curr.Ticker,
+                    cusip,
+                    curr.Shares,
+                    curr.WeightPercent,
+                    DiffType.New,
+                    null));
             }
 
-            return new HoldingDiff
-            {
-                Id = Guid.NewGuid(),
-                ComputedAt = DateTime.UtcNow,
-                PreviousSnapshotId = previous.Id,
-                CurrentSnapshotId = current.Id,
-                Entries = entries
-            };
+            return new HoldingDiff(previous.Id, current.Id, entries);
         }
     }
 }

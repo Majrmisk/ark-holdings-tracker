@@ -62,23 +62,16 @@ namespace Application.Clients
                 decimal.TryParse(Sanitize(csv.GetField(6) ?? ""), NumberStyles.Any, CultureInfo.InvariantCulture, out var marketValue);
                 decimal.TryParse(Sanitize(csv.GetField(7) ?? ""), NumberStyles.Any, CultureInfo.InvariantCulture, out var weight);
 
-                holdings.Add(new HoldingRecord
-                {
-                    Company = (csv.GetField(2) ?? "").Trim(),
-                    Ticker = (csv.GetField(3) ?? "").Trim(),
-                    Cusip = (csv.GetField(4) ?? "").Trim(),
-                    Shares = shares,
-                    MarketValueUsd = marketValue,
-                    WeightPercent = weight
-                });
+                holdings.Add(new HoldingRecord(
+                    (csv.GetField(2) ?? "").Trim(),
+                    (csv.GetField(3) ?? "").Trim(),
+                    (csv.GetField(4) ?? "").Trim(),
+                    shares,
+                    marketValue,
+                    weight));
             }
 
-            return holdings.Count == 0 ? null : new HoldingSnapshot
-            {
-                Id = Guid.NewGuid(),
-                FetchedAt = fetchedAt,
-                Holdings = holdings
-            };
+            return holdings.Count == 0 ? null : new HoldingSnapshot(fetchedAt, holdings);
         }
 
         private async Task<HttpResponseMessage?> GetRequest()
