@@ -3,40 +3,59 @@
     ViewData["Title"] = "Edit Role";
 }
 
-<div class="row mt-4">
-    <div class="col-md-5 offset-md-3">
-        <h2 class="mb-4">Edit Role</h2>
+<div class="flex justify-center mt-8">
+    <div class="w-full max-w-md">
 
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <p class="text-muted mb-3">Updating role for <strong>@Model.UserName</strong></p>
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">Edit Role</h2>
 
-                <form asp-area="Admin" asp-controller="Users" asp-action="EditRole" method="post">
-                    <input asp-for="UserId" type="hidden" />
-                    <input asp-for="UserName" type="hidden" />
+        <div class="bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 p-6">
 
-                    <div class="mb-4">
-                        <label asp-for="SelectedRole" class="form-label fw-bold">New Role</label>
-                        <select asp-for="SelectedRole"
-                                asp-items="@(new SelectList(Model.AvailableRoles))"
-                                class="form-select">
-                        </select>
-                        <span asp-validation-for="SelectedRole" class="text-danger small"></span>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-5">
+                Updating role for <strong class="font-semibold text-gray-900 dark:text-white">@Model.UserName</strong>
+            </p>
+
+            <form asp-area="Admin" asp-controller="Users" asp-action="EditRole" method="post" class="space-y-5">
+                <input asp-for="UserId" type="hidden" />
+                <input asp-for="UserName" type="hidden" />
+
+                <!-- Role -->
+                <div>
+                    <label asp-for="SelectedRole"
+                           class="block mb-1.5 text-sm font-semibold text-gray-900 dark:text-white">
+                        New Role
+                    </label>
+                    <select asp-for="SelectedRole"
+                            asp-items="@(new SelectList(Model.AvailableRoles))"
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                    </select>
+                    <span asp-validation-for="SelectedRole" class="mt-1 text-xs text-red-600 dark:text-red-400"></span>
+                </div>
+
+                <!-- Validation summary -->
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="flex items-center p-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400"
+                         role="alert">
+                        <svg class="shrink-0 inline w-4 h-4 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
+                        </svg>
+                        <div>@Html.ValidationSummary(false, "", new { @class = "mb-0" })</div>
                     </div>
+                }
 
-                    @if (!ViewData.ModelState.IsValid)
-                    {
-                        <div class="alert alert-danger small">
-                            @Html.ValidationSummary(false, "", new { @class = "mb-0" })
-                        </div>
-                    }
+                <!-- Actions -->
+                <div class="flex gap-3 pt-1">
+                    <button type="submit"
+                            class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-semibold rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                        Save
+                    </button>
+                    <a asp-area="Admin" asp-controller="Users" asp-action="Index"
+                       class="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700">
+                        Cancel
+                    </a>
+                </div>
 
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary fw-semibold">Save</button>
-                        <a asp-area="Admin" asp-controller="Users" asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
-                    </div>
-                </form>
-            </div>
+            </form>
         </div>
     </div>
 </div>
