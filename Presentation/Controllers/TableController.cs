@@ -16,10 +16,7 @@ public class TableController(UserManager<AppUser> userManager, IHoldingService h
 
         if (diff == null)
         {
-            await holdingService.FetchLatest();
-            diff = await holdingService.GetLatestDiffAsync();
-            if (diff == null)
-                return NotFound();
+            return NotFound();
         }
 
         var currentUser = await userManager.GetUserAsync(User);
@@ -31,7 +28,7 @@ public class TableController(UserManager<AppUser> userManager, IHoldingService h
 
         var roles = await userManager.GetRolesAsync(currentUser);
 
-        Enum.TryParse(roles.First(), out UserRole role);
+        Enum.TryParse(roles.FirstOrDefault(), out UserRole role);
 
         var model = new TableViewModel
         {
