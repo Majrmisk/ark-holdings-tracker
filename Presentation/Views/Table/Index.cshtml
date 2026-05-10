@@ -19,7 +19,15 @@ else
     <h1 class="text-2xl font-bold text-gray-800">
         Diff Computed at @Model.Diff.ComputedAt.ToString("g", System.Globalization.CultureInfo.CurrentCulture)
     </h1>
-    <button onclick="exportPdf()"
+    <div class="flex items-center gap-2">
+        @if (Model.CanToggleColors)
+        {
+            <a href="@Url.Action("Index", "Table", new { colors = !Model.ColorsEnabled })"
+               class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-700 rounded-lg hover:bg-gray-50 focus:ring-4 focus:outline-none focus:ring-gray-300">
+                @(Model.ColorsEnabled ? "Disable Colors" : "Enable Colors")
+            </a>
+        }
+        <button onclick="exportPdf()"
             class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-700 bg-white border border-blue-700 rounded-lg hover:bg-blue-50 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-gray-800 dark:text-blue-500 dark:border-blue-500 dark:hover:bg-gray-700">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
              class="shrink-0" viewBox="0 0 16 16">
@@ -28,6 +36,7 @@ else
         </svg>
         Export PDF
     </button>
+    </div>
 </div>
 
 <div id="diffTable" class="relative overflow-x-auto shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">

@@ -10,21 +10,22 @@ namespace App.Controllers;
 [Authorize]
 public class TableController(IAuthService authService, IHoldingService holdingService) : Controller
 {
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(bool colors = true)
     {
         var diff = await holdingService.GetLatestDiffAsync();
 
         if (diff == null)
-        {
             return View(new TableViewModel());
-        }
 
         var role = await authService.GetCurrentUserRoleAsync(User);
+        var canToggle = role == UserRole.PowerUser;
 
         var model = new TableViewModel
         {
             Diff = diff,
-            ColorScheme = ColorService.GetColorSchemeByRole(role),
+            ColorScheme = colors ? ColorService.GetColorSchemeByRole(role) : new Colorscheme(),
+            CanToggleColors = canToggle,
+            ColorsEnabled = colors,
         };
 
         return View(model);
