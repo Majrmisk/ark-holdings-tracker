@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "css:build": "npx @tailwindcss/cli -i Presentation/wwwroot/css/site.css -o Presentation/wwwroot/css/tailwind_styles.css  --minify"
+    "css:build": "npx @tailwindcss/cli -i Host/wwwroot/css/site.css -o Host/wwwroot/css/tailwind_styles.css  --minify"
   },
   "keywords": [],
   "author": "",
