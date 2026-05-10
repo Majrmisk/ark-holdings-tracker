@@ -2,6 +2,7 @@ image: mcr.microsoft.com/dotnet/sdk:10.0
 
 stages:
   - build
+  - test
 
 variables:
   DOTNET_CLI_TELEMETRY_OPTOUT: "1" 
@@ -14,3 +15,14 @@ build:
   script:
     - dotnet restore PV260Project.sln
     - dotnet build PV260Project.sln --configuration Release --no-restore
+
+test:
+  tags:
+    - shared-fi
+  stage: test
+  services:
+    - docker:dind
+  variables:
+    DOCKER_HOST: "tcp://docker:2375"
+  script:
+    - dotnet test Tests/Tests.csproj --configuration Release
