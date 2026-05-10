@@ -95,8 +95,11 @@ Warn the user about any additions and explain why.
 
 ### File location
 
-Place the test file at `Tests/{MirrorPath}/{ClassName}Tests.cs` where `{MirrorPath}` mirrors
-the source project structure:
+Place the test file at `Tests/{MirrorPath}/{ClassName}Tests.cs` where `{MirrorPath}` is the
+full relative path from the solution root to the source file's directory, preserving all
+nested folders. For example, a source file at `Presentation/Areas/Admin/Controllers/UsersController.cs`
+maps to `Tests/Presentation/Areas/Admin/Controllers/UsersControllerTests.cs` — do not
+flatten or skip intermediate directories:
 
 | Source path | Test path |
 | --- | --- |
@@ -105,11 +108,12 @@ the source project structure:
 | `Application/Clients/HoldingClient.cs` | `Tests/Application/Clients/HoldingClientTests.cs` |
 | `Infrastructure/Repositories/HoldingsRepository.cs` | `Tests/Infrastructure/Repositories/HoldingsRepositoryTests.cs` |
 | `Presentation/Controllers/TableController.cs` | `Tests/Presentation/Controllers/TableControllerTests.cs` |
+| `Presentation/Areas/Admin/Controllers/UsersController.cs` | `Tests/Presentation/Areas/Admin/Controllers/UsersControllerTests.cs` |
 
 ### Namespace
 
-Use `Tests.{MirrorPath}` matching the directory structure:
-`Tests.Domain.Services`, `Tests.Application.Services`, etc.
+Use `Tests.{MirrorPath}` matching the full directory structure, including nested paths:
+`Tests.Domain.Services`, `Tests.Application.Services`, `Tests.Presentation.Areas.Admin.Controllers`, etc.
 
 ### Test class structure
 
