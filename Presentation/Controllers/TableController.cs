@@ -2,10 +2,12 @@ using App.Models;
 using Application.Interfaces;
 using Application.Services;
 using Domain;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace App.Controllers;
 
+[Authorize]
 public class TableController(IAuthService authService, IHoldingService holdingService) : Controller
 {
     public async Task<IActionResult> Index()
