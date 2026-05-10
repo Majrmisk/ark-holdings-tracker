@@ -2,13 +2,11 @@ using App.Models;
 using Application.Interfaces;
 using Application.Services;
 using Domain;
-using Infrastructure.Identity;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace App.Controllers;
 
-public class TableController(UserManager<AppUser> userManager, IHoldingService holdingService) : Controller
+public class TableController(IAuthService authService, IHoldingService holdingService) : Controller
 {
     public async Task<IActionResult> Index()
     {
@@ -19,16 +17,7 @@ public class TableController(UserManager<AppUser> userManager, IHoldingService h
             return NotFound();
         }
 
-        var currentUser = await userManager.GetUserAsync(User);
-
-        if (currentUser == null)
-        {
-            return Unauthorized();
-        }
-
-        var roles = await userManager.GetRolesAsync(currentUser);
-
-        Enum.TryParse(roles.FirstOrDefault(), out UserRole role);
+        var role = await authService.GetCurrentUserRoleAsync(User);
 
         var model = new TableViewModel
         {

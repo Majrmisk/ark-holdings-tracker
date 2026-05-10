@@ -1,35 +1,22 @@
 using App.Models.Admin;
 using Application.Interfaces;
 using Domain;
-using Infrastructure.Identity;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Presentation.Areas.Admin.Controllers;
 
-public class UsersController(IUserService userService, UserManager<AppUser> userManager) : AdminController
+public class UsersController(IUserService userService, IAuthService authService) : AdminController
 {
     private static IEnumerable<UserRole> RolesFor(UserRole callerRole) =>
         callerRole == UserRole.SuperAdmin
             ? [UserRole.User, UserRole.PowerUser, UserRole.Admin]
             : [UserRole.User, UserRole.PowerUser];
 
-    private async Task<UserRole> GetCallerRoleAsync()
-    {
-        var caller = await userManager.GetUserAsync(User);
-        if (caller is null)
-            return UserRole.User;
-
-        var roles = await userManager.GetRolesAsync(caller);
-        Enum.TryParse(roles.FirstOrDefault(), out UserRole role);
-        return role;
-    }
-
     [HttpGet]
     public async Task<IActionResult> Index()
     {
         var result = await userService.GetAllUsersAsync();
-        var callerRole = await GetCallerRoleAsync();
+        var callerRole = await authService.GetCurrentUserRoleAsync(User);
 
         return View(new UserListViewModel
         {
@@ -41,7 +28,7 @@ public class UsersController(IUserService userService, UserManager<AppUser> user
     [HttpGet]
     public async Task<IActionResult> Create()
     {
-        var callerRole = await GetCallerRoleAsync();
+        var callerRole = await authService.GetCurrentUserRoleAsync(User);
         return View(new CreateUserViewModel { AvailableRoles = RolesFor(callerRole) });
     }
 
@@ -49,7 +36,7 @@ public class UsersController(IUserService userService, UserManager<AppUser> user
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(CreateUserViewModel model)
     {
-        var callerRole = await GetCallerRoleAsync();
+        var callerRole = await authService.GetCurrentUserRoleAsync(User);
         model.AvailableRoles = RolesFor(callerRole);
 
         if (!ModelState.IsValid)
@@ -71,7 +58,7 @@ public class UsersController(IUserService userService, UserManager<AppUser> user
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(string id)
     {
-        var callerUserId = userManager.GetUserId(User)!;
+        var callerUserId = authService.GetCurrentUserId(User)!;
         var result = await userService.DeleteUserAsync(id, callerUserId);
 
         if (result.IsFailure)
@@ -90,7 +77,7 @@ public class UsersController(IUserService userService, UserManager<AppUser> user
             return NotFound();
 
         var user = result.Value!;
-        var callerRole = await GetCallerRoleAsync();
+        var callerRole = await authService.GetCurrentUserRoleAsync(User);
 
         return View(new EditRoleViewModel
         {
@@ -105,7 +92,7 @@ public class UsersController(IUserService userService, UserManager<AppUser> user
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> EditRole(EditRoleViewModel model)
     {
-        var callerRole = await GetCallerRoleAsync();
+        var callerRole = await authService.GetCurrentUserRoleAsync(User);
         model.AvailableRoles = RolesFor(callerRole);
 
         if (!ModelState.IsValid)
@@ -146,7 +133,7 @@ public class UsersController(IUserService userService, UserManager<AppUser> user
         if (!ModelState.IsValid)
             return View(model);
 
-        var callerRole = await GetCallerRoleAsync();
+        var callerRole = await authService.GetCurrentUserRoleAsync(User);
         var result = await userService.ChangePasswordAsync(model.UserId, model.NewPassword, callerRole);
 
         if (result.IsFailure)

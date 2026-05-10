@@ -1,11 +1,10 @@
 using App.Models;
-using Infrastructure.Identity;
-using Microsoft.AspNetCore.Identity;
+using Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace App.Controllers;
 
-public class AccountController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager) : Controller
+public class AccountController(IAuthService authService) : Controller
 {
     [HttpGet]
     public IActionResult Login()
@@ -18,9 +17,9 @@ public class AccountController(UserManager<AppUser> userManager, SignInManager<A
     {
         if (ModelState.IsValid)
         {
-            var result = await signInManager.PasswordSignInAsync(model.Username, model.Password, model.RememberMe, false);
+            var succeeded = await authService.SignInAsync(model.Username, model.Password, model.RememberMe);
 
-            if (result.Succeeded)
+            if (succeeded)
             {
                 return RedirectToAction(nameof(HomeController.Index), "Home");
             }
@@ -35,7 +34,7 @@ public class AccountController(UserManager<AppUser> userManager, SignInManager<A
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Logout()
     {
-        await signInManager.SignOutAsync();
+        await authService.SignOutAsync();
         return RedirectToAction(nameof(HomeController.Index), "Home");
     }
 }
