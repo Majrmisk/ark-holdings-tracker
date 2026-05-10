@@ -47,8 +47,8 @@ Determine which layer the target class belongs to by its namespace or project:
 | `Domain` or `Domain.*` | Domain | Pure unit tests, no mocking |
 | `Application.Services` | Application Service | Unit tests with Moq for interfaces |
 | `Application.Clients` | Application Client | Integration tests with WireMock.Net |
-| `Infrastructure.Repositories` | Infrastructure Repo | Integration tests with Testcontainers |
-| `Infrastructure.CronJobs` | Infrastructure Job | Integration tests with Testcontainers + Moq |
+| `Infrastructure.Repositories` (Marten) | Infrastructure Repo (document store) | Integration tests with Testcontainers |
+| `Infrastructure.Repositories` (Identity) | Infrastructure Repo (Identity) | Unit tests with Moq for UserManager |
 | `*.Controllers` or `Presentation.*` | Presentation | Unit tests with Moq for services |
 
 ## Step 3: Read existing tests
