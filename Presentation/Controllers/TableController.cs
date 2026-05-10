@@ -14,7 +14,7 @@ public class TableController(IAuthService authService, IHoldingService holdingSe
 
         if (diff == null)
         {
-            return NotFound();
+            return View(new TableViewModel());
         }
 
         var role = await authService.GetCurrentUserRoleAsync(User);

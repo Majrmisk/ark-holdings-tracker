@@ -5,6 +5,16 @@
     ViewData["Title"] = "Holding Diffs";
 }
 
+@if (Model.Diff == null)
+{
+    <div class="d-flex justify-content-center align-items-center" style="min-height: 300px;">
+        <div class="text-center">
+            <h4 class="text-secondary">No diff data available</h4>
+        </div>
+    </div>
+}
+else
+{
 <div class="flex justify-between items-center mb-4 mt-2">
     <h1 class="text-2xl font-bold text-gray-800">
         Diff Computed at @Model.Diff.ComputedAt.ToString("g", System.Globalization.CultureInfo.CurrentCulture)
@@ -57,6 +67,8 @@
         </tbody>
     </table>
 </div>
+
+}
 
 @{
     string GetColor(DiffType type)

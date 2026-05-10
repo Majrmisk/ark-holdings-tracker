@@ -82,7 +82,7 @@ public static class DependencyInjection
 
         services.ConfigureApplicationCookie(options =>
         {
-            options.LoginPath = "/login";
+            options.LoginPath = "/Account/Login";
         });
 
         return services;
