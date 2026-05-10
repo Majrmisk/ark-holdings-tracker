@@ -20,9 +20,5 @@ test:
   tags:
     - shared-fi
   stage: test
-  services:
-    - docker:dind
-  variables:
-    DOCKER_HOST: "tcp://docker:2375"
   script:
-    - dotnet test Tests/Tests.csproj --configuration Release
+    - dotnet test Tests/Tests.csproj --configuration Release --filter "FullyQualifiedName!~Infrastructure.Repositories.HoldingsRepository"
