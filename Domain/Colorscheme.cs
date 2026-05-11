@@ -2,12 +2,12 @@ namespace Domain;
 
 public class Colorscheme
 {
-    public string New { get; private set; } = "bg-green-500";
-    public string Increased { get; private set; } = "bg-green-800";
-    public string Reduced { get; private set; } = "bg-red-800";
-    public string Removed { get; private set; } = "bg-yellow-500";
-    public string Unchanged { get; private set; } = "bg-grey-500";
-    public string WeightShifted { get; private set; } = "bg-purple-500";
+    public string New { get; private set; } = string.Empty;
+    public string Increased { get; private set; } = string.Empty;
+    public string Reduced { get; private set; } = string.Empty;
+    public string Removed { get; private set; } = string.Empty;
+    public string Unchanged { get; private set; } = string.Empty;
+    public string WeightShifted { get; private set; } = string.Empty;
 
     public Colorscheme()
     {

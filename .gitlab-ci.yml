@@ -5,7 +5,7 @@ stages:
   - test
 
 variables:
-  DOTNET_CLI_TELEMETRY_OPTOUT: "1" 
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
   DOTNET_NOLOGO: "true"
 
 build:
@@ -21,4 +21,5 @@ test:
     - shared-fi
   stage: test
   script:
-    - dotnet test Tests/Tests.csproj --configuration Release --filter "FullyQualifiedName!~Infrastructure.Repositories.HoldingsRepository"
+    - dotnet restore PV260Project.sln
+    - dotnet test PV260Project.sln --configuration Release --no-restore --logger "console;verbosity=normal" --filter "FullyQualifiedName!~Infrastructure.Repositories.HoldingsRepository"

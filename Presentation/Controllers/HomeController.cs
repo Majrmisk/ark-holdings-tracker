@@ -1,6 +1,7 @@
 using App.Models;
 using Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.Text;
 

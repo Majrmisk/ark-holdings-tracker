@@ -42,9 +42,9 @@ namespace Infrastructure.CronJobs
                 {
                     await holdingService.DeleteOldDataAsync();
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    _logger.LogError("Delete job failed");
+                    _logger.LogError(ex, "Delete job failed");
                 }
             }
         }

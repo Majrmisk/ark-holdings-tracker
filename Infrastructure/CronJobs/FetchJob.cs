@@ -42,9 +42,9 @@ namespace Infrastructure.CronJobs
                 {
                     await holdingService.FetchLatest();
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    _logger.LogError("Fetch job failed");
+                    _logger.LogError(ex, "Fetch job failed");
                 }
             }
         }

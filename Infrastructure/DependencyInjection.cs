@@ -4,12 +4,17 @@ using Application.Services;
 using Application.Settings;
 using Domain;
 using Infrastructure.CronJobs;
+using Infrastructure.Identity;
 using Infrastructure.Persistence;
 using Infrastructure.Repositories;
+using Infrastructure.Services;
 using Marten;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Infrastructure;
 
@@ -37,6 +42,7 @@ public static class DependencyInjection
 
         services.AddScoped<IHoldingsRepository, HoldingsRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IAuthService, AuthService>();
 
         return services;
     }
@@ -62,5 +68,39 @@ public static class DependencyInjection
         services.Configure<DataRetentionSettings>(configuration.GetSection("DataRetention"));
         services.Configure<AdminUserSettings>(configuration.GetSection("AdminUser"));
         return services;
+    }
+
+    public static IServiceCollection AddIdentityInfrastructure(this IServiceCollection services)
+    {
+        services.AddIdentity<AppUser, IdentityRole>(options =>
+            {
+                options.Password.RequireDigit = true;
+                options.Password.RequiredLength = 6;
+            })
+            .AddEntityFrameworkStores<AppDbContext>()
+            .AddDefaultTokenProviders();
+
+        services.ConfigureApplicationCookie(options =>
+        {
+            options.LoginPath = "/Account/Login";
+        });
+
+        return services;
+    }
+
+    public static async Task UseInfrastructureAsync(this WebApplication app)
+    {
+        if (app.Environment.IsDevelopment())
+        {
+            using var scope = app.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await db.Database.MigrateAsync();
+            await DataSeeder.SeedAsync(scope.ServiceProvider);
+        }
+        else
+        {
+            app.UseExceptionHandler("/Home/Error");
+            app.UseHsts();
+        }
     }
 }
