@@ -57,6 +57,13 @@ namespace Application.Services
             }
 
             var latest = await _holdingsRepository.GetLatestSnapshotAsync();
+
+            if (latest != null && latest.ContentEquals(snapshot))
+            {
+                _logger.LogInformation("Snapshot unchanged. Skipping persistence.");
+                return;
+            }
+
             if (latest != null)
             {
                 var diff = HoldingDiffCalculator.Compute(latest, snapshot);

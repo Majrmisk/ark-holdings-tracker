@@ -39,11 +39,26 @@ public class HoldingServiceTests
     }
 
     [Fact]
-    public async Task FetchLatest_SavesSnapshotAndDiff_WhenPreviousSnapshotExists()
+    public async Task FetchLatest_SavesSnapshotAndDiff_WhenPreviousSnapshotDiffers()
     {
         var (service, repoMock, clientMock, _) = CreateService();
-        var previousSnapshot = new HoldingSnapshot(DateTimeOffset.UtcNow.AddHours(-1), []);
-        var newSnapshot = new HoldingSnapshot(DateTimeOffset.UtcNow, []);
+
+        var previousSnapshot = new HoldingSnapshot(
+            Guid.NewGuid(),
+            DateTimeOffset.UtcNow.AddHours(-1),
+            new[]
+            {
+                new HoldingRecord("A", "A", "CUSIP1", 10, 100, 100)
+            });
+
+        var newSnapshot = new HoldingSnapshot(
+            Guid.NewGuid(),
+            DateTimeOffset.UtcNow,
+            new[]
+            {
+                new HoldingRecord("A", "A", "CUSIP1", 20, 200, 100)
+            });
+
         clientMock.Setup(c => c.Fetch()).ReturnsAsync(newSnapshot);
         repoMock.Setup(r => r.GetLatestSnapshotAsync()).ReturnsAsync(previousSnapshot);
 
@@ -51,6 +66,28 @@ public class HoldingServiceTests
 
         repoMock.Verify(r => r.SaveSnapshotAsync(newSnapshot), Times.Once);
         repoMock.Verify(r => r.SaveDiffAsync(It.IsAny<HoldingDiff>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task FetchLatest_DoesNotPersist_WhenSnapshotUnchanged()
+    {
+        var (service, repoMock, clientMock, _) = CreateService();
+
+        var snapshot = new HoldingSnapshot(
+            Guid.NewGuid(),
+            DateTimeOffset.UtcNow,
+            new[]
+            {
+                new HoldingRecord("A", "A", "CUSIP1", 10, 100, 100)
+            });
+
+        clientMock.Setup(c => c.Fetch()).ReturnsAsync(snapshot);
+        repoMock.Setup(r => r.GetLatestSnapshotAsync()).ReturnsAsync(snapshot);
+
+        await service.FetchLatest();
+
+        repoMock.Verify(r => r.SaveSnapshotAsync(It.IsAny<HoldingSnapshot>()), Times.Never);
+        repoMock.Verify(r => r.SaveDiffAsync(It.IsAny<HoldingDiff>()), Times.Never);
     }
 
     [Fact]
@@ -96,8 +133,23 @@ public class HoldingServiceTests
     public async Task FetchLatest_ComputesDiffWithCorrectSnapshotIds_WhenPreviousExists()
     {
         var (service, repoMock, clientMock, _) = CreateService();
-        var previousSnapshot = new HoldingSnapshot(DateTimeOffset.UtcNow.AddHours(-1), []);
-        var newSnapshot = new HoldingSnapshot(DateTimeOffset.UtcNow, []);
+
+        var previousSnapshot = new HoldingSnapshot(
+            Guid.NewGuid(),
+            DateTimeOffset.UtcNow.AddHours(-1),
+            new[]
+            {
+                new HoldingRecord("A", "A", "CUSIP1", 10, 100, 100)
+            });
+
+        var newSnapshot = new HoldingSnapshot(
+            Guid.NewGuid(),
+            DateTimeOffset.UtcNow,
+            new[]
+            {
+                new HoldingRecord("A", "A", "CUSIP1", 20, 200, 100)
+            });
+
         clientMock.Setup(c => c.Fetch()).ReturnsAsync(newSnapshot);
         repoMock.Setup(r => r.GetLatestSnapshotAsync()).ReturnsAsync(previousSnapshot);
 

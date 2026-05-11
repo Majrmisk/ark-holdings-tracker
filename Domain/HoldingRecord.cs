@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace Domain;
 
-public class HoldingRecord
+public class HoldingRecord : IEquatable<HoldingRecord>
 {
     [JsonInclude]
     public string Company { get; private set; } = string.Empty;
@@ -40,5 +40,32 @@ public class HoldingRecord
         Shares = shares;
         MarketValueUsd = marketValueUsd;
         WeightPercent = weightPercent;
+    }
+
+    public bool Equals(HoldingRecord? other)
+    {
+        if (other is null) return false;
+
+        return Cusip == other.Cusip
+            && Company == other.Company
+            && Ticker == other.Ticker
+            && Shares == other.Shares
+            && MarketValueUsd == other.MarketValueUsd
+            && WeightPercent == other.WeightPercent;
+    }
+
+    public override bool Equals(object? obj)
+        => Equals(obj as HoldingRecord);
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(
+            Cusip,
+            Company,
+            Ticker,
+            Shares,
+            MarketValueUsd,
+            WeightPercent
+        );
     }
 }
