@@ -57,19 +57,26 @@ namespace Application.Services
             }
 
             var latest = await _holdingsRepository.GetLatestSnapshotAsync();
+            
+            // first obtained snapshot => create first diff with itself
+            if (latest == null)
+            {
+                var firstDiff = HoldingDiffCalculator.Compute(snapshot, snapshot);
+                await _holdingsRepository.SaveDiffAsync(firstDiff);
+                await _holdingsRepository.SaveSnapshotAsync(snapshot);
+                return;
+            }
 
-            if (latest != null && latest.ContentEquals(snapshot))
+            // snapshot is the same as previous => preserve diff
+            if (latest.ContentEquals(snapshot)) 
             {
                 _logger.LogInformation("Snapshot unchanged. Skipping persistence.");
                 return;
             }
 
-            if (latest != null)
-            {
-                var diff = HoldingDiffCalculator.Compute(latest, snapshot);
-                await _holdingsRepository.SaveDiffAsync(diff);
-            }
-
+            // normal diff route
+            var diff = HoldingDiffCalculator.Compute(latest, snapshot);
+            await _holdingsRepository.SaveDiffAsync(diff);
             await _holdingsRepository.SaveSnapshotAsync(snapshot);
         }
     }

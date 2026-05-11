@@ -53,7 +53,7 @@ Use Arrange-Act-Assert separated by blank lines. No section comments.
 
 ```csharp
 [Fact]
-public async Task FetchLatest_SavesSnapshotOnly_WhenNoPreviousSnapshotExists()
+public async Task FetchLatest_SavesSnapshotAndSelfDiff_WhenNoPreviousSnapshotExists()
 {
     var (service, repoMock, clientMock, _) = CreateService();
     var snapshot = new HoldingSnapshot(DateTimeOffset.UtcNow, []);
@@ -63,7 +63,9 @@ public async Task FetchLatest_SavesSnapshotOnly_WhenNoPreviousSnapshotExists()
     await service.FetchLatest();
 
     repoMock.Verify(r => r.SaveSnapshotAsync(snapshot), Times.Once);
-    repoMock.Verify(r => r.SaveDiffAsync(It.IsAny<HoldingDiff>()), Times.Never);
+    repoMock.Verify(r => r.SaveDiffAsync(It.Is<HoldingDiff>(d =>
+        d.PreviousSnapshotId == snapshot.Id &&
+        d.CurrentSnapshotId == snapshot.Id)), Times.Once);
 }
 ```
 
