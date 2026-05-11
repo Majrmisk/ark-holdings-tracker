@@ -1,5 +1,5 @@
 
-namespace tailwind_4_blazor_starter.Services;
+namespace Application.Services;
 
 public interface IFlowbiteService
 {

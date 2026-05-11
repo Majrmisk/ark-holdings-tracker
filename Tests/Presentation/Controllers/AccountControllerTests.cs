@@ -1,9 +1,9 @@
-using App.Controllers;
-using App.Models;
 using Application.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using Presentation.Controllers;
+using Presentation.Models;
 using Shouldly;
 
 namespace Tests.Presentation.Controllers;

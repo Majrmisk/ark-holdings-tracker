@@ -1,11 +1,11 @@
-using App.Models;
+using Presentation.Models;
 using Application.Interfaces;
 using Application.Services;
 using Domain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace App.Controllers;
+namespace Presentation.Controllers;
 
 [Authorize]
 public class TableController(IAuthService authService, IHoldingService holdingService) : Controller

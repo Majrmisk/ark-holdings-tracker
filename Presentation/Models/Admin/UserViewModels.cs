@@ -2,7 +2,7 @@ using Application.DTOs;
 using Domain;
 using System.ComponentModel.DataAnnotations;
 
-namespace App.Models.Admin;
+namespace Presentation.Models.Admin;
 
 public class UserListViewModel
 {

@@ -1,11 +1,11 @@
-using App.Models;
+using Presentation.Models;
 using Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.Text;
 
-namespace App.Controllers;
+namespace Presentation.Controllers;
 
 public class HomeController : Controller
 {

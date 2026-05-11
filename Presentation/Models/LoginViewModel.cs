@@ -1,4 +1,4 @@
-namespace App.Models;
+namespace Presentation.Models;
 
 using System.ComponentModel.DataAnnotations;
 

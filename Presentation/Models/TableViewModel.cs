@@ -1,6 +1,6 @@
 using Domain;
 
-namespace App.Models;
+namespace Presentation.Models;
 
 public class TableViewModel
 {

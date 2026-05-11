@@ -1,8 +1,8 @@
-using App.Models;
+using Presentation.Models;
 using Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
-namespace App.Controllers;
+namespace Presentation.Controllers;
 
 public class AccountController(IAuthService authService) : Controller
 {
