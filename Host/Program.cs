@@ -9,17 +9,22 @@ builder.Services.AddIdentityInfrastructure();
 builder.Services.AddApplication();
 builder.Services.AddCronJobs();
 
+builder.WebHost.UseStaticWebAssets();
+
 var app = builder.Build();
 
 await app.UseInfrastructureAsync();
 
 app.UseHttpsRedirection();
+
+app.MapStaticAssets();
+
+app.UseStaticFiles();
+
 app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
-
-app.MapStaticAssets();
 
 app.MapControllerRoute(
     name: "areas",

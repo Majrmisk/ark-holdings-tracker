@@ -1,11 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
-
+	
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <RootNamespace>Presentation</RootNamespace>
         <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+		<StaticWebAssetsEnabled>true</StaticWebAssetsEnabled>
+		<StaticWebAssetBasePath>/</StaticWebAssetBasePath>
     </PropertyGroup>
 
     <ItemGroup>
