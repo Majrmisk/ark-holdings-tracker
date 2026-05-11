@@ -11,6 +11,7 @@ Conventions and patterns for writing tests in this project.
 | Moq | Interface mocking | `Moq` |
 | WireMock.Net | HTTP endpoint mocking | `WireMock.Net` |
 | Testcontainers | Real PostgreSQL for integration tests | `Testcontainers.PostgreSql` |
+| NetArchTest | Architectural rule enforcement | `NetArchTest.Rules` |
 
 ## Project Structure
 
@@ -21,6 +22,7 @@ Tests/
 ├── Application/
 │   ├── Clients/          # Tests for Application/Clients/
 │   └── Services/         # Tests for Application/Services/
+├── Architecture/         # Architectural rule tests
 ├── Domain/
 │   └── Services/         # Tests for Domain/Services/
 ├── Infrastructure/
@@ -191,3 +193,100 @@ public class HoldingsRepositoryTests : IClassFixture<PostgresFixture>
 ### Controllers (unit tests with Moq)
 
 Mock service interfaces. Test action results, redirects, and view model construction.
+
+### Architecture (structural tests with NetArchTest)
+
+Architectural tests live in `Tests/Architecture/` and use `NetArchTest.Rules` to enforce layer boundaries, naming conventions, and dependency rules. They load types from the production assembly via `Types.InAssembly(...)`.
+
+All architectural tests go in a single file `ArchitectureTests.cs`. Use a `private static readonly Assembly` field to avoid repeated assembly lookups:
+
+```csharp
+public class ArchitectureTests
+{
+    private static readonly Assembly Assembly = typeof(SomeProductionType).Assembly;
+```
+
+**Dependency direction** — enforce that inner layers never reference outer layers:
+
+```csharp
+[Fact]
+public void Domain_DoesNotDependOn_Application()
+{
+    var result = Types.InAssembly(Assembly)
+        .That().ResideInNamespace("MyApp.Domain")
+        .ShouldNot().HaveDependencyOn("MyApp.Application")
+        .GetResult();
+
+    result.IsSuccessful.ShouldBeTrue();
+}
+
+[Fact]
+public void Domain_DoesNotDependOn_Infrastructure()
+{
+    var result = Types.InAssembly(Assembly)
+        .That().ResideInNamespace("MyApp.Domain")
+        .ShouldNot().HaveDependencyOn("MyApp.Infrastructure")
+        .GetResult();
+
+    result.IsSuccessful.ShouldBeTrue();
+}
+
+[Fact]
+public void Application_DoesNotDependOn_Infrastructure()
+{
+    var result = Types.InAssembly(Assembly)
+        .That().ResideInNamespace("MyApp.Application")
+        .ShouldNot().HaveDependencyOn("MyApp.Infrastructure")
+        .GetResult();
+
+    result.IsSuccessful.ShouldBeTrue();
+}
+```
+
+**Naming conventions** — enforce that types are named and placed consistently:
+
+```csharp
+[Fact]
+public void Interfaces_ShouldBeNamedWithIPrefix()
+{
+    var result = Types.InAssembly(Assembly)
+        .That().AreInterfaces()
+        .Should().HaveNameStartingWith("I")
+        .GetResult();
+
+    result.IsSuccessful.ShouldBeTrue();
+}
+
+[Fact]
+public void Repositories_ShouldResideInInfrastructureNamespace()
+{
+    var result = Types.InAssembly(Assembly)
+        .That().HaveNameEndingWith("Repository")
+        .Should().ResideInNamespace("MyApp.Infrastructure")
+        .GetResult();
+
+    result.IsSuccessful.ShouldBeTrue();
+}
+```
+
+**Access modifiers** — enforce encapsulation rules, e.g. that domain entities are not public outside their namespace:
+
+```csharp
+[Fact]
+public void Controllers_ShouldBePublic()
+{
+    var result = Types.InAssembly(Assembly)
+        .That().HaveNameEndingWith("Controller")
+        .Should().BePublic()
+        .GetResult();
+
+    result.IsSuccessful.ShouldBeTrue();
+}
+```
+
+When a rule fails, `result.FailingTypeNames` contains the offending types. Prefer including this in the failure message using Shouldly's `customMessage` overload so failures are self-diagnosing:
+
+```csharp
+result.IsSuccessful.ShouldBeTrue(
+    $"Failing types: {string.Join(", ", result.FailingTypeNames ?? [])}");
+```

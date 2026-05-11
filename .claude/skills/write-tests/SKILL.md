@@ -4,6 +4,8 @@ description: >-
   Generate and validate xUnit tests for .NET classes in this Clean Architecture project.
   Use when the user asks to write tests, create tests, add tests, generate test cases,
   validate existing tests, check test coverage, or test a specific class/service/controller.
+  Also handles architectural tests (dependency rules, naming conventions) when the user
+  asks to add or validate architecture tests.
   Supports targeting by class name argument or by selected code in the editor.
 ---
 
@@ -26,6 +28,9 @@ these conventions exactly.
   ```
 - Read the full source file.
 
+**If the argument is `architecture` or `arch`** (e.g., `/write-tests architecture`):
+- Skip Steps 2–4 and go directly to **Step 5a: Architectural tests**.
+
 **If selected code is provided** (IDE selection):
 - Use the selected code directly.
 - Identify the class it belongs to.
@@ -35,6 +40,8 @@ these conventions exactly.
 - Scan all existing test files in `Tests/`.
 - Identify which classes have tests and which don't.
 - Validate existing tests cover the right things (correct method coverage, edge cases).
+- Check whether `Tests/Architecture/ArchitectureTests.cs` exists; if not, generate it
+  as part of the overall coverage pass (see Step 5a).
 - Report a coverage summary, then generate tests for uncovered classes.
 - Build and run all tests when done.
 
@@ -80,6 +87,7 @@ Check `Tests/Tests.csproj` for required packages and references.
 <PackageReference Include="Moq" Version="4.20.72" />
 <PackageReference Include="Shouldly" Version="4.3.0" />
 <PackageReference Include="Testcontainers.PostgreSql" Version="4.11.0" />
+<PackageReference Include="NetArchTest.Rules" Version="1.3.2" />
 ```
 
 **Project references** — add only when needed:
@@ -90,6 +98,184 @@ Check `Tests/Tests.csproj` for required packages and references.
   and Presentation project references.
 
 Warn the user about any additions and explain why.
+
+## Step 5a: Architectural tests
+
+Architectural tests live in a single file: `Tests/Architecture/ArchitectureTests.cs`.
+
+### When to generate or update this file
+
+- The user passes `architecture` or `arch` as the argument.
+- The no-argument full-coverage scan finds the file is missing.
+- The user asks to add, validate, or extend architecture rules.
+
+If the file already exists, read it first and only add rules that are not yet covered.
+
+### Assembly markers
+
+Each layer compiles to its own assembly, so one marker type per layer is required.
+`Types.InAssembly(...)` only scans the single `.dll` that contains the given type —
+using the wrong assembly for a rule causes it to find no matching types and pass vacuously.
+
+**Identify a stable marker type for each layer** by scanning the source tree:
+
+```bash
+find . -name "*.cs" -not -path "*/obj/*" -not -path "*/bin/*" | head -40
+```
+
+Pick a well-known, concrete type from each layer that is unlikely to be renamed or moved:
+
+```csharp
+private static readonly Assembly DomainAssembly         = typeof(SomeEntity).Assembly;
+private static readonly Assembly ApplicationAssembly    = typeof(SomeService).Assembly;
+private static readonly Assembly InfrastructureAssembly = typeof(SomeRepository).Assembly;
+private static readonly Assembly PresentationAssembly   = typeof(SomeController).Assembly;
+```
+
+**Choosing the right assembly per rule:**
+
+| Rule targets | Assembly to use |
+| --- | --- |
+| Domain dependency / naming rules | `DomainAssembly` |
+| Application dependency / naming rules | `ApplicationAssembly` |
+| Infrastructure dependency / naming rules | `InfrastructureAssembly` |
+| Presentation dependency / naming rules | `PresentationAssembly` |
+| Cross-cutting rules (e.g. all interfaces) | Loop over all four assemblies |
+
+Cross-cutting rules that apply to all layers must iterate over every assembly:
+
+```csharp
+[Fact]
+public void Interfaces_ShouldBeNamedWithIPrefix()
+{
+    var assemblies = new[] { DomainAssembly, ApplicationAssembly, InfrastructureAssembly, PresentationAssembly };
+    foreach (var assembly in assemblies)
+    {
+        var result = Types.InAssembly(assembly)
+            .That().AreInterfaces()
+            .Should().HaveNameStartingWith("I")
+            .GetResult();
+
+        result.IsSuccessful.ShouldBeTrue(
+            $"Failing types: {string.Join(", ", result.FailingTypeNames ?? [])}");
+    }
+}
+```
+
+### Rules to generate
+
+Generate rules for all of the following categories. Derive the exact namespace strings
+by inspecting the source tree (`find . -name "*.cs" ...`) so they match the actual project.
+
+**1. Dependency direction** — inner layers must not reference outer layers. Use the
+assembly of the layer being tested (the *source* of the forbidden dependency):
+
+```csharp
+[Fact]
+public void Domain_DoesNotDependOn_Application()
+{
+    var result = Types.InAssembly(DomainAssembly)
+        .That().ResideInNamespace("Domain")
+        .ShouldNot().HaveDependencyOn("Application")
+        .GetResult();
+
+    result.IsSuccessful.ShouldBeTrue(
+        $"Failing types: {string.Join(", ", result.FailingTypeNames ?? [])}");
+}
+```
+
+Generate one test for each prohibited direction:
+- Domain → Application (`DomainAssembly`)
+- Domain → Infrastructure (`DomainAssembly`)
+- Domain → Presentation (`DomainAssembly`)
+- Application → Infrastructure (`ApplicationAssembly`)
+- Application → Presentation (`ApplicationAssembly`)
+- Infrastructure → Presentation (`InfrastructureAssembly`)
+
+**2. Naming conventions** — types must be named and placed consistently. Use the assembly
+where those types actually live:
+
+```csharp
+[Fact]
+public void Repositories_ShouldResideInInfrastructureNamespace()
+{
+    var result = Types.InAssembly(InfrastructureAssembly)
+        .That().HaveNameEndingWith("Repository")
+        .Should().ResideInNamespace("Infrastructure")
+        .GetResult();
+
+    result.IsSuccessful.ShouldBeTrue(
+        $"Failing types: {string.Join(", ", result.FailingTypeNames ?? [])}");
+}
+```
+
+Additional naming rules to consider based on the project's conventions:
+- `*Service` types → `ApplicationAssembly`, reside in `Application.Services` or `Domain.Services`
+- `*Controller` types → `PresentationAssembly`, reside in `Presentation` (or `Presentation.Areas.*`)
+- `*Client` types → `ApplicationAssembly`, reside in `Application.Clients`
+- All interfaces → loop over all four assemblies, name starts with `I`
+
+**3. Access modifiers** — enforce visibility rules using the assembly where those types live:
+
+```csharp
+[Fact]
+public void Controllers_ShouldBePublic()
+{
+    var result = Types.InAssembly(PresentationAssembly)
+        .That().HaveNameEndingWith("Controller")
+        .Should().BePublic()
+        .GetResult();
+
+    result.IsSuccessful.ShouldBeTrue(
+        $"Failing types: {string.Join(", ", result.FailingTypeNames ?? [])}");
+}
+```
+
+### Full file template
+
+```csharp
+using System.Reflection;
+using NetArchTest.Rules;
+using Shouldly;
+
+namespace Tests.Architecture;
+
+public class ArchitectureTests
+{
+    private static readonly Assembly DomainAssembly         = typeof(SomeEntity).Assembly;
+    private static readonly Assembly ApplicationAssembly    = typeof(SomeService).Assembly;
+    private static readonly Assembly InfrastructureAssembly = typeof(SomeRepository).Assembly;
+    private static readonly Assembly PresentationAssembly   = typeof(SomeController).Assembly;
+
+    // --- Dependency direction ---
+
+    [Fact]
+    public void Domain_DoesNotDependOn_Application() { /* DomainAssembly */ }
+
+    [Fact]
+    public void Application_DoesNotDependOn_Infrastructure() { /* ApplicationAssembly */ }
+
+    // ... remaining dependency rules ...
+
+    // --- Naming conventions ---
+
+    [Fact]
+    public void Interfaces_ShouldBeNamedWithIPrefix() { /* loop all assemblies */ }
+
+    [Fact]
+    public void Repositories_ShouldResideInInfrastructureNamespace() { /* InfrastructureAssembly */ }
+
+    // ... remaining naming rules ...
+
+    // --- Access modifiers ---
+
+    [Fact]
+    public void Controllers_ShouldBePublic() { /* PresentationAssembly */ }
+}
+```
+
+Always include the `$"Failing types: ..."` custom message on every `ShouldBeTrue` call
+so failures are self-diagnosing without needing to attach a debugger.
 
 ## Step 6: Generate the test file
 
