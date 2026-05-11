@@ -3,9 +3,7 @@ using Application.Common;
 using Application.DTOs;
 using Application.Interfaces;
 using Domain;
-using Infrastructure.Identity;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Moq;
@@ -25,23 +23,18 @@ public class UsersControllerTests
         new(TargetUserId, TargetUserName, nameof(UserRole.User), DateTime.UtcNow);
 
     private static (UsersController Controller, Mock<IUserService> ServiceMock,
-        Mock<UserManager<AppUser>> UserManagerMock) CreateController(
+        Mock<IAuthService> AuthServiceMock) CreateController(
         UserRole callerRole = UserRole.SuperAdmin)
     {
         var serviceMock = new Mock<IUserService>();
-        var storeMock = new Mock<IUserStore<AppUser>>();
-        var userManagerMock = new Mock<UserManager<AppUser>>(
-            storeMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+        var authServiceMock = new Mock<IAuthService>();
 
-        var callerUser = new AppUser { Id = CallerId, UserName = "caller" };
-        userManagerMock.Setup(m => m.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
-            .ReturnsAsync(callerUser);
-        userManagerMock.Setup(m => m.GetRolesAsync(callerUser))
-            .ReturnsAsync(new List<string> { callerRole.ToString() });
-        userManagerMock.Setup(m => m.GetUserId(It.IsAny<ClaimsPrincipal>()))
+        authServiceMock.Setup(a => a.GetCurrentUserRoleAsync(It.IsAny<ClaimsPrincipal>()))
+            .ReturnsAsync(callerRole);
+        authServiceMock.Setup(a => a.GetCurrentUserId(It.IsAny<ClaimsPrincipal>()))
             .Returns(CallerId);
 
-        var controller = new UsersController(serviceMock.Object, userManagerMock.Object);
+        var controller = new UsersController(serviceMock.Object, authServiceMock.Object);
         controller.ControllerContext = new ControllerContext
         {
             HttpContext = new DefaultHttpContext
@@ -53,7 +46,7 @@ public class UsersControllerTests
         controller.TempData = new TempDataDictionary(
             controller.ControllerContext.HttpContext, Mock.Of<ITempDataProvider>());
 
-        return (controller, serviceMock, userManagerMock);
+        return (controller, serviceMock, authServiceMock);
     }
 
     [Fact]

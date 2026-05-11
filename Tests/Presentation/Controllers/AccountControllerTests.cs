@@ -1,8 +1,7 @@
 using App.Controllers;
 using App.Models;
-using Infrastructure.Identity;
+using Application.Interfaces;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Shouldly;
@@ -11,24 +10,16 @@ namespace Tests.Presentation.Controllers;
 
 public class AccountControllerTests
 {
-    private static (AccountController Controller, Mock<SignInManager<AppUser>> SignInManagerMock)
+    private static (AccountController Controller, Mock<IAuthService> AuthServiceMock)
         CreateController()
     {
-        var userStoreMock = new Mock<IUserStore<AppUser>>();
-        var userManagerMock = new Mock<UserManager<AppUser>>(
-            userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
-        var contextAccessorMock = new Mock<IHttpContextAccessor>();
-        var claimsFactoryMock = new Mock<IUserClaimsPrincipalFactory<AppUser>>();
-        var signInManagerMock = new Mock<SignInManager<AppUser>>(
-            userManagerMock.Object, contextAccessorMock.Object, claimsFactoryMock.Object,
-            null!, null!, null!, null!);
-
-        var controller = new AccountController(userManagerMock.Object, signInManagerMock.Object);
+        var authServiceMock = new Mock<IAuthService>();
+        var controller = new AccountController(authServiceMock.Object);
         controller.ControllerContext = new ControllerContext
         {
             HttpContext = new DefaultHttpContext()
         };
-        return (controller, signInManagerMock);
+        return (controller, authServiceMock);
     }
 
     [Fact]
@@ -44,15 +35,15 @@ public class AccountControllerTests
     [Fact]
     public async Task Login_Post_RedirectsToHome_WhenCredentialsValid()
     {
-        var (controller, signInManagerMock) = CreateController();
+        var (controller, authServiceMock) = CreateController();
         var model = new LoginViewModel
         {
             Username = "admin",
             Password = "P@ssw0rd",
             RememberMe = false
         };
-        signInManagerMock.Setup(m => m.PasswordSignInAsync("admin", "P@ssw0rd", false, false))
-            .ReturnsAsync(Microsoft.AspNetCore.Identity.SignInResult.Success);
+        authServiceMock.Setup(a => a.SignInAsync("admin", "P@ssw0rd", false))
+            .ReturnsAsync(true);
 
         var result = await controller.Login(model);
 
@@ -64,15 +55,15 @@ public class AccountControllerTests
     [Fact]
     public async Task Login_Post_ReturnsViewWithError_WhenCredentialsInvalid()
     {
-        var (controller, signInManagerMock) = CreateController();
+        var (controller, authServiceMock) = CreateController();
         var model = new LoginViewModel
         {
             Username = "admin",
             Password = "wrong",
             RememberMe = false
         };
-        signInManagerMock.Setup(m => m.PasswordSignInAsync("admin", "wrong", false, false))
-            .ReturnsAsync(Microsoft.AspNetCore.Identity.SignInResult.Failed);
+        authServiceMock.Setup(a => a.SignInAsync("admin", "wrong", false))
+            .ReturnsAsync(false);
 
         var result = await controller.Login(model);
 
@@ -83,28 +74,28 @@ public class AccountControllerTests
     [Fact]
     public async Task Login_Post_ReturnsView_WhenModelStateInvalid()
     {
-        var (controller, signInManagerMock) = CreateController();
+        var (controller, authServiceMock) = CreateController();
         controller.ModelState.AddModelError("Username", "Required");
         var model = new LoginViewModel();
 
         var result = await controller.Login(model);
 
         result.ShouldBeOfType<ViewResult>();
-        signInManagerMock.Verify(
-            m => m.PasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()),
+        authServiceMock.Verify(
+            a => a.SignInAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()),
             Times.Never);
     }
 
     [Fact]
     public async Task Logout_RedirectsToHome()
     {
-        var (controller, signInManagerMock) = CreateController();
+        var (controller, authServiceMock) = CreateController();
 
         var result = await controller.Logout();
 
         var redirect = result.ShouldBeOfType<RedirectToActionResult>();
         redirect.ActionName.ShouldBe("Index");
         redirect.ControllerName.ShouldBe("Home");
-        signInManagerMock.Verify(m => m.SignOutAsync(), Times.Once);
+        authServiceMock.Verify(a => a.SignOutAsync(), Times.Once);
     }
 }
